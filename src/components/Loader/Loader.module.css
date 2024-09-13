@@ -1,11 +1,6 @@
-.wrapper {
-  margin: 0 auto;
-  max-width: 320px;
-  font-size: 22px;
-  font-weight: 700;
+.loader {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 20px 0px;
-  color: var(--color-focus);
+  height: 80dvh;
 }

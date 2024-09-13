@@ -1,36 +1,77 @@
+import './App.css';
+import { lazy, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ContactForm from './components/ContactForm/ContactForm.jsx';
-import ContactList from './components/ContactList/ContactList.jsx';
-import SearchBox from './components/SearchBox/SearchBox.jsx';
-import {
-  selectContacts,
-  selectError,
-  selectLoading,
-} from './redux/contactsSlice.js';
-import ErrorMessage from './components/ErrorMessage/ErrorMessage.jsx';
-import Loader from './components/Loader/Loader.jsx';
-import { useEffect } from 'react';
-import { fetchContacts } from './redux/contactsOps.js';
+import { Toaster } from 'react-hot-toast';
+import { Route, Routes } from 'react-router';
+
+import { selectIsRefreshing } from './redux/auth/selectors';
+import Loader from './components/Loader/Loader';
+import Layout from './components/Layout/Layout';
+import RestrictedRoute from './components/RestrictedRoute/RestrictedRoute';
+import PrivateRoute from './components/PrivateRoute/PrivateRoute';
+
+const HomePage = lazy(() => import('./pages/HomePage/HomePage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage/RegisterPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage/LoginPage'));
+const ContactsPage = lazy(() => import('./pages/ContactsPage/ContactsPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage/NotFoundPage'));
+
+import { refreshUser } from './redux/auth/operations';
 
 function App() {
-  const error = useSelector(selectError);
-  const loading = useSelector(selectLoading);
-  const contacts = useSelector(selectContacts);
   const dispatch = useDispatch();
+  const isRefreshing = useSelector(selectIsRefreshing);
 
   useEffect(() => {
-    dispatch(fetchContacts());
+    dispatch(refreshUser());
   }, [dispatch]);
 
   return (
-    <div className="container">
-      <h1>Phonebook</h1>
-      <ContactForm />
-      <SearchBox />
-      {error && <ErrorMessage />}
-      {loading && <Loader />}
-      {contacts.length > 0 && <ContactList />}
-    </div>
+    <>
+      {isRefreshing ? (
+        <Loader />
+      ) : (
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route
+              path="/register"
+              element={
+                <RestrictedRoute
+                  redirectTo="/contacts"
+                  component={<RegisterPage />}
+                />
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <RestrictedRoute
+                  redirectTo="/contacts"
+                  component={<LoginPage />}
+                />
+              }
+            />
+            <Route
+              path="/contacts"
+              element={
+                <PrivateRoute
+                  redirectTo="/login"
+                  component={<ContactsPage />}
+                />
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <RestrictedRoute redirectTo="*" component={<NotFoundPage />} />
+              }
+            />
+          </Routes>
+        </Layout>
+      )}
+      <Toaster position="top-right" reverseOrder={false} />
+    </>
   );
 }
 

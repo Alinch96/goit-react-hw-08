@@ -1,8 +1,15 @@
-import { useSelector } from 'react-redux';
-import css from './ErrorMessage.module.css';
-import { selectError } from '../../redux/contactsSlice';
+import { BiSolidErrorAlt } from 'react-icons/bi';
+import styles from './ErrorMessage.module.css';
 
-export default function ErrorMessage() {
-  const error = useSelector(selectError);
-  return <p className={css.error}>Oops! 🤒 {error}</p>;
-}
+const ErrorMessage = () => {
+  return (
+    <div className={styles.errorContainer}>
+      <BiSolidErrorAlt className={styles.errorIcon} />
+      <p className={styles.errorText}>
+        Something went wrong, please reload you page!
+      </p>
+    </div>
+  );
+};
+
+export default ErrorMessage;

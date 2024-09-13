@@ -1,26 +1,98 @@
-import { BsFillTelephoneFill } from 'react-icons/bs';
-import { IoPerson } from 'react-icons/io5';
-import css from './Contact.module.css';
-import { useDispatch } from 'react-redux';
-import { deleteContact } from '../../redux/contactsOps';
+import { IoIosContact } from 'react-icons/io';
+import { MdPhoneInTalk } from 'react-icons/md';
 
-const Contact = ({ contact: { id, name, number } }) => {
+import { AiOutlineUserDelete } from 'react-icons/ai';
+import { LiaUserEditSolid } from 'react-icons/lia';
+
+import styles from './Contact.module.css';
+
+import { useDispatch } from 'react-redux';
+import { deleteContact, updateContact } from '../../redux/contacts/operations';
+import EditContactModal from '../EditContactModal/EditContactModal';
+import DeleteContactModal from '../DeleteContactModal/DeleteContactModal';
+import { useEffect, useRef, useState } from 'react';
+
+const Contact = ({ contact }) => {
+  const bodyRef = useRef(document.body);
   const dispatch = useDispatch();
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  useEffect(() => {
+    const body = bodyRef.current;
+    isEditModalOpen || isDeleteModalOpen
+      ? body.classList.add('disable-scroll')
+      : body.classList.remove('disable-scroll');
+
+    return () => {
+      body.classList.remove('disable-scroll');
+    };
+  }, [isEditModalOpen, isDeleteModalOpen]);
+
+  const handleDelete = () => {
+    handleCloseDeleteModal();
+    dispatch(deleteContact(contact.id));
+  };
+
+  const handleUpdateContact = modifiedContact => {
+    handleCloseEditModal();
+    dispatch(updateContact(modifiedContact));
+  };
+
+  const handleOpenEditNodal = () => setIsEditModalOpen(true);
+
+  const handleCloseEditModal = () => setIsEditModalOpen(false);
+
+  const handleOpenDeleteNodal = () => setIsDeleteModalOpen(true);
+
+  const handleCloseDeleteModal = () => setIsDeleteModalOpen(false);
+
   return (
     <>
-      <div className={css['contact-wrapper']}>
-        <div className={css['text-icon-wrapper']}>
-          <IoPerson size={42} />
-          <p>{name}</p>
+      <li className={styles.contactItem}>
+        <div className={styles.textWrapper}>
+          <div className={styles.contactContext}>
+            <IoIosContact />
+            <span>{contact.name}</span>
+          </div>
+          <div className={styles.contactContext}>
+            <MdPhoneInTalk />
+            <a href={`tel: ` + contact.number}>{contact.number}</a>
+          </div>
         </div>
-        <div className={css['text-icon-wrapper']}>
-          <BsFillTelephoneFill size={42} />
-          <p>{number}</p>
+        <div className={styles.btnWrapper}>
+          <button
+            onClick={handleOpenEditNodal}
+            type="button"
+            aria-label="edit button"
+          >
+            <LiaUserEditSolid color="#5c9beb" />
+          </button>
+          <button
+            onClick={handleOpenDeleteNodal}
+            type="button"
+            aria-label="delete button"
+          >
+            <AiOutlineUserDelete color="tomato" />
+          </button>
         </div>
-      </div>
-      <button type="button" onClick={() => dispatch(deleteContact(id))}>
-        Delete
-      </button>
+      </li>
+
+      {isEditModalOpen && (
+        <EditContactModal
+          handleCloseModal={handleCloseEditModal}
+          handleUpdateContact={handleUpdateContact}
+          id={contact.id}
+        />
+      )}
+      {isDeleteModalOpen && (
+        <DeleteContactModal
+          contact={contact}
+          handleDelete={handleDelete}
+          handleCancel={handleCloseDeleteModal}
+        />
+      )}
     </>
   );
 };
